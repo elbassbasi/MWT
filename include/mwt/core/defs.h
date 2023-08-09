@@ -1,8 +1,8 @@
 /*
- * defs.h
+ *  defs.h
  *
- *  Created on: 4 juil. 2023
- *      Author: elbas
+ *  Created on: 08-07-2023
+ *  Author: azeddine El Bassbasi
  */
 
 #ifndef MWT_CORE_DEFS_H_
@@ -23,9 +23,10 @@ typedef unsigned int MUnichar;
 typedef short MShort;
 typedef unsigned short MUShort;
 typedef int MInt;
-typedef unsigned int MUint;
+typedef unsigned int MUInt;
 typedef long long int MInt64;
 typedef unsigned long long int MUInt64;
+typedef MIntPtr MResult;
 
 /*
  * DLL_EXPORT
@@ -51,12 +52,15 @@ typedef unsigned long long int MUInt64;
   #endif
 #endif
 
+
 #ifdef MBUILD
 #define MEXPORT DLL_EXPORT
 #else
 #define MEXPORT
 #endif
 
+#define MINLINE static inline
+#define _ARGINT(x) ((void*)((MIntPtr)((int)x)))
 
 
 

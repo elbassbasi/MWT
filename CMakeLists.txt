@@ -8,15 +8,34 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
-#build mwt
-	set(mwt_src )
+	set(COMMOM_DIR src/common)
+	set(common_src 
+		${COMMOM_DIR}/core/resource.c 
+		${COMMOM_DIR}/core/app.c
+		${COMMOM_DIR}/core/toolkit.c
+		${COMMOM_DIR}/core/utf8.c
+		${COMMOM_DIR}/widgets/widget.c
+	)
+    
+    set(platform_src )
+
 	set(mwt_inc include)
 	set(mwt_lib )
 	set(mwt_def MWTBUILD)
 if (WIN32)
-	set(mwt_lib gdiplus usp10 uxtheme oleaut32 gdi32 ole32 uuid msimg32 opengl32 Imm32 comctl32)
-	add_subdirectory(win32)
+	set(mwt_lib ${mwt_lib} gdiplus usp10 uxtheme oleaut32 gdi32 ole32 uuid msimg32 opengl32 Imm32 comctl32)
 	ENABLE_LANGUAGE(RC)
+    set(WIN32_DIR src/win32)
+    set(win32_src 
+		${WIN32_DIR}/widgets/container.c
+		${WIN32_DIR}/widgets/frame.c
+		${WIN32_DIR}/widgets/menu.c 
+		${WIN32_DIR}/widgets/toolkit.c 
+		${WIN32_DIR}/widgets/tooltip.c
+		${WIN32_DIR}/widgets/widget.c
+		${WIN32_DIR}/widgets/widget_msg.c
+	)
+    set(platform_src ${platform_src} ${win32_src})
 endif(WIN32)
 
 if (UNIX AND NOT APPLE)
@@ -30,7 +49,6 @@ if (UNIX AND NOT APPLE)
 	set(mwt_inc ${mwt_inc} ${GTK3_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS})
 	set(mwt_lib ${mwt_lib} ${GTK3_LIBRARIES} ${OPENGL_LIBRARIES} pthread dl)
 	set(mwt_def ${mwt_def} )
-	add_subdirectory(gtk)
 endif()
 
 if (UNIX AND APPLE)
@@ -39,40 +57,23 @@ if (UNIX AND APPLE)
     
 	set(mwt_inc ${mwt_inc} ${OPENGL_INCLUDE_DIRS})
 	set(mwt_lib ${mwt_lib} ${COCOA_LIBRARY} ${OPENGL_LIBRARIES})
-	add_subdirectory(osx)
 endif()
-	add_subdirectory(common)
-#	add_subdirectory(custom)
 
-#build mwt
-if(mwt)
+    set(mwt_src ${common_src} ${platform_src})
+    list(REMOVE_DUPLICATES mwt_src)
     add_library(mwt SHARED ${mwt_src})
     target_include_directories(mwt PRIVATE ${mwt_inc})
 	target_compile_definitions(mwt PRIVATE ${mwt_def})
     target_link_libraries(mwt ${mwt_lib})
-endif()
-
-#build mwtp
-#	set(mwtp_src )
-#	add_subdirectory(mwtp)
-#	add_library(mwtp SHARED ${mwt_src} ${mwtp_src})
-#    target_include_directories(mwtp PRIVATE ${mwt_inc})
-#	target_compile_definitions(mwtp PRIVATE -DMWTPBUILD ${mwt_def})
-#	target_link_libraries(mwtp ${mwt_lib})
 
 #build tests
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-#	find_package(OpenGL REQUIRED)
-#	set(src_mwttest )
-#	add_subdirectory(tests)
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_sNAME)
+    set(TEST_DIR tests)
+	set(src_mwttest 
+        ${TEST_DIR}/main/TApp.cpp
+    )
 	
-#	add_executable(mwttest ${src_mwttest})
-#	target_include_directories(mwttest PRIVATE include ${OPENGL_INCLUDE_DIRS})
-#	target_link_libraries(mwttest mwtp ${OPENGL_LIBRARIES})
-
-#	add_custom_target(mwttest-copy-files ALL
-#    	COMMAND ${CMAKE_COMMAND} -E copy_directory
-#    	${CMAKE_CURRENT_SOURCE_DIR}/tests/images
-#   	${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/images
-#    )
-endif()
+	add_executable(mwttest ${src_mwttest})
+	target_include_directories(mwttest PUBLIC ./include )
+	target_link_libraries(mwttest mwt)
+#endif()
